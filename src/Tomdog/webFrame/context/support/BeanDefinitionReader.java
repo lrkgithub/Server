@@ -14,6 +14,7 @@ public class BeanDefinitionReader {
 
     private Properties config = new Properties();
 
+//    此处的List<String>必须是放的全限定名字
     private List<String> registyBeanClasses = new ArrayList<String>();
 
     private static final String SCAN_PACKAGE = "scanPackage";
@@ -46,6 +47,15 @@ public class BeanDefinitionReader {
         return registyBeanClasses;
     }
 
+    public boolean contains(String classFullName) {
+        return this.registyBeanClasses.contains(classFullName);
+    }
+
+    public List<String> loadBeanDefinition() {
+        doScanner(config.getProperty(SCAN_PACKAGE));
+        return this.registyBeanClasses;
+    }
+
     //    扫描class文件
     private void doScanner(String packageName) {
 
@@ -75,20 +85,6 @@ public class BeanDefinitionReader {
             }
         }
 
-    }
-
-    private BeanDefinition registerBean(String className) {
-
-        if (this.registyBeanClasses.contains(className)) {
-
-            BeanDefinition beanDefinition = new BeanDefinition();
-            beanDefinition.setClassName(className);
-            beanDefinition.setFactoryBeanName(lowerCase(className.substring(className.indexOf("."))));
-
-            return beanDefinition;
-        }
-
-        return null;
     }
 
     private String lowerCase(String s) {

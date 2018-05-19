@@ -20,4 +20,8 @@ public class BeanDefinition {
     public void setFactoryBeanName(String factoryBeanName) {
         FactoryBeanName = factoryBeanName;
     }
+
+    public boolean isLasyInit() {
+        return false;
+    }
 }
