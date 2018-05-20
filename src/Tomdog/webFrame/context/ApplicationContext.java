@@ -81,8 +81,8 @@ public class ApplicationContext extends DefaultListableBeanFactory implements Be
             beanDefinition = new BeanDefinition();
             beanDefinition.setClassName(classFullName);
 
-            String classSimpleName = classFullName.substring(classFullName.lastIndexOf("\\.") + 1);
-            String beanName = (classSimpleName.charAt(0) + 32) + classSimpleName.substring(1);
+            String classSimpleName = classFullName.substring(classFullName.lastIndexOf(".") + 1);
+            String beanName = lowerFirstCharacter(classSimpleName.charAt(0)) + classSimpleName.substring(1);
 
             beanDefinition.setFactoryBeanName(beanName);
         }
@@ -100,7 +100,7 @@ public class ApplicationContext extends DefaultListableBeanFactory implements Be
 
         for (Map.Entry<String, BeanWrapper> beanWrapperEntry : this.beanWrapperMap.entrySet()) {
 
-            populateBean(beanWrapperEntry.getKey(), beanWrapperEntry.getValue().getInstance());
+            populateBean(beanWrapperEntry.getValue().getInstance());
 
         }
 
@@ -159,7 +159,7 @@ public class ApplicationContext extends DefaultListableBeanFactory implements Be
         return instance;
     }
 
-    private void populateBean(String className, Object instance) {
+    private void populateBean(Object instance) {
 
         Class clazz = instance.getClass();
 
@@ -185,10 +185,23 @@ public class ApplicationContext extends DefaultListableBeanFactory implements Be
             field.setAccessible(true);
 
             try {
-                field.set(instance, this.beanWrapperMap.get(autowareBeanName).getWrapperInstance());
+                field.set(instance, this.beanWrapperMap.get(autowareBeanName).getInstance());
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
+    }
+
+    private char lowerFirstCharacter(char c) {
+
+        if (c < 'z' && c > 'a') {
+            return c;
+        }
+
+        if (c < 'Z' && c > 'A') {
+            return (char)(c + 32);
+        }
+
+        return c;
     }
 }

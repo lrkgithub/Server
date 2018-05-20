@@ -17,11 +17,11 @@ public class BeanDefinitionReader {
 //    此处的List<String>必须是放的全限定名字
     private List<String> registyBeanClasses = new ArrayList<String>();
 
-    private static final String SCAN_PACKAGE = "scanPackage";
+    private static final String SCAN_PACKAGE = "package";
 
     public BeanDefinitionReader(String locations) {
 
-        InputStream in = this.getClass().getResourceAsStream(locations.replaceAll("classpath:", ""));
+        InputStream in = this.getClass().getClassLoader().getResourceAsStream(locations);
 
         try {
             config.load(in);
@@ -59,7 +59,7 @@ public class BeanDefinitionReader {
     //    扫描class文件
     private void doScanner(String packageName) {
 
-        URL url = this.getClass().getClassLoader().getResource(File.separator + packageName.replaceAll("\\.", File.separator));
+        URL url = this.getClass().getClassLoader().getResource( packageName.replaceAll("\\.", File.separator));
 
         if (null == url) {
             return;
@@ -67,7 +67,7 @@ public class BeanDefinitionReader {
 
         File classDir =  new File(url.getFile());
 
-        if (classDir.isDirectory()
+        if (!classDir.isDirectory()
                 || null == classDir.listFiles()) {
             return;
         }
