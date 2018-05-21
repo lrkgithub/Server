@@ -1,9 +1,6 @@
 package Tomdog.core;
 
-import Tomdog.core.Connector;
-import Tomdog.webFrame.ServletApi.Servlet;
-import Tomdog.webFrame.context.ApplicationContext;
-import Tomdog.webFrame.core.DispachServlet;
+import Tomdog.springFrame.context.ApplicationContext;
 
 public class TomDog {
 

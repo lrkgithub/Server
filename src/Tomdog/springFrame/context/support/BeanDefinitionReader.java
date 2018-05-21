@@ -1,6 +1,4 @@
-package Tomdog.webFrame.context.support;
-
-import Tomdog.webFrame.beans.BeanDefinition;
+package Tomdog.springFrame.context.support;
 
 import java.io.File;
 import java.io.IOException;

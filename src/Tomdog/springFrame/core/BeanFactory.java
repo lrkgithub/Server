@@ -1,4 +1,4 @@
-package Tomdog.webFrame.core;
+package Tomdog.springFrame.core;
 
 public interface BeanFactory {
 

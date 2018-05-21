@@ -1,4 +1,4 @@
-package Tomdog.webFrame.beans;
+package Tomdog.springFrame.beans;
 
 public class BeanDefinition {
 

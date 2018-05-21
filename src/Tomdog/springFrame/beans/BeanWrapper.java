@@ -1,6 +1,8 @@
-package Tomdog.webFrame.beans;
+package Tomdog.springFrame.beans;
 
-public class BeanWrapper {
+import Tomdog.springFrame.core.FactoryBean;
+
+public class BeanWrapper extends FactoryBean {
 
     private BeanPostProcessor postPostProcessor;
 
@@ -9,6 +11,7 @@ public class BeanWrapper {
 
     public BeanWrapper(Object instance) {
         this.instance = instance;
+        this.wrapperInstance = instance;
     }
 
     public Object getInstance() {

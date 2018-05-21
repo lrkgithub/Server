@@ -1,6 +1,6 @@
 package demo;
 
-import Tomdog.webFrame.annotation.Service;
+import Tomdog.springFrame.annotation.Service;
 
 @Service
 public class a {

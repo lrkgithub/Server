@@ -1,13 +1,13 @@
-package Tomdog.webFrame.context;
+package Tomdog.springFrame.context;
 
-import Tomdog.webFrame.annotation.Autoware;
-import Tomdog.webFrame.annotation.Controller;
-import Tomdog.webFrame.annotation.Service;
-import Tomdog.webFrame.beans.BeanDefinition;
-import Tomdog.webFrame.beans.BeanPostProcessor;
-import Tomdog.webFrame.beans.BeanWrapper;
-import Tomdog.webFrame.context.support.BeanDefinitionReader;
-import Tomdog.webFrame.core.BeanFactory;
+import Tomdog.springFrame.annotation.Autoware;
+import Tomdog.springFrame.annotation.Controller;
+import Tomdog.springFrame.annotation.Service;
+import Tomdog.springFrame.beans.BeanDefinition;
+import Tomdog.springFrame.beans.BeanPostProcessor;
+import Tomdog.springFrame.beans.BeanWrapper;
+import Tomdog.springFrame.context.support.BeanDefinitionReader;
+import Tomdog.springFrame.core.BeanFactory;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -30,7 +30,8 @@ public class ApplicationContext extends DefaultListableBeanFactory implements Be
         refresh();
     }
 
-    private void refresh() {
+    @Override
+    public void refresh() {
 
         this.reader = new BeanDefinitionReader(this.configLocation);
 
@@ -41,6 +42,32 @@ public class ApplicationContext extends DefaultListableBeanFactory implements Be
         doRegisty(beanDefinitions);
 
         doAutowrited();
+    }
+
+    @Override
+    public Object getBean(String beanName) {
+
+        BeanDefinition beanDefinition = this.beanDefinitionMap.get(beanName);
+
+        BeanPostProcessor benaPostProcessor = new BeanPostProcessor();
+
+        Object instance = instantionBean(beanDefinition);
+
+        if (null == instance) {
+            return null;
+        }
+
+        BeanWrapper beanWrapper = new BeanWrapper(instance);
+        this.beanWrapperMap.put(beanName, beanWrapper);
+
+
+        return this.beanWrapperMap.get(beanName).getWrapperInstance();
+    }
+
+    public String[] getBeanDefinitionNames() {
+
+        return (String[])this.beanDefinitionMap.keySet().toArray();
+
     }
 
     private void doRegisty(List<String> beanDefinition) {
@@ -104,26 +131,6 @@ public class ApplicationContext extends DefaultListableBeanFactory implements Be
 
         }
 
-    }
-
-    @Override
-    public Object getBean(String beanName) {
-
-        BeanDefinition beanDefinition = this.beanDefinitionMap.get(beanName);
-
-        BeanPostProcessor benaPostProcessor = new BeanPostProcessor();
-
-        Object instance = instantionBean(beanDefinition);
-
-        if (null == instance) {
-            return null;
-        }
-
-        BeanWrapper beanWrapper = new BeanWrapper(instance);
-        this.beanWrapperMap.put(beanName, beanWrapper);
-
-
-        return this.beanWrapperMap.get(beanName);
     }
 
     private Object instantionBean(BeanDefinition beanDefinition) {

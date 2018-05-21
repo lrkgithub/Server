@@ -1,23 +1,8 @@
-package Tomdog.webFrame.core;
+package Tomdog.springFrame.core;
 
-import Tomdog.webFrame.ServletApi.HttpServlet;
-import Tomdog.webFrame.annotation.Autoware;
-import Tomdog.webFrame.annotation.Controller;
-import Tomdog.webFrame.annotation.Service;
-import Tomdog.webFrame.context.ApplicationContext;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import Tomdog.springFrame.ServletApi.HttpServlet;
+import Tomdog.springFrame.aop.AopProxyUtils;
+import Tomdog.springFrame.context.ApplicationContext;
 
 public class DispachServlet extends HttpServlet {
     
@@ -80,6 +65,19 @@ public class DispachServlet extends HttpServlet {
     }
 
     private void initHandlerMappings(ApplicationContext applicationContext) {
+
+        String[] beanNames = applicationContext.getBeanDefinitionNames();
+
+        for (String beanName : beanNames) {
+
+            Object proxy = applicationContext.getBean(beanName);
+            Object controller = AopProxyUtils.getTargetObject(proxy);
+            Class<?> clazz = controller.getClass();
+
+//            TODO
+
+        }
+
     }
 
     private void initHandlerAdapter(ApplicationContext applicationContext) {

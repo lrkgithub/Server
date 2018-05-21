@@ -1,8 +1,8 @@
 package demo;
 
-import Tomdog.webFrame.annotation.Autoware;
-import Tomdog.webFrame.annotation.Controller;
-import Tomdog.webFrame.annotation.RequestMapping;
+import Tomdog.springFrame.annotation.Autoware;
+import Tomdog.springFrame.annotation.Controller;
+import Tomdog.springFrame.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/lrk")

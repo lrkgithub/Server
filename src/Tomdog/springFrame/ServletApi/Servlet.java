@@ -1,4 +1,4 @@
-package Tomdog.webFrame.ServletApi;
+package Tomdog.springFrame.ServletApi;
 
 public interface Servlet {
 

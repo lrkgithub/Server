@@ -1,4 +1,5 @@
-package Tomdog.webFrame.annotation;
+package Tomdog.springFrame.annotation;
+
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -6,11 +7,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.PARAMETER)
-public @interface RequestParam {
+@Target(ElementType.TYPE)
+public @interface Service {
 
     String value() default "";
-
-    boolean isRequired() default true;
 
 }

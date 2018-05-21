@@ -1,4 +1,4 @@
-package Tomdog.webFrame.context;
+package Tomdog.springFrame.context;
 
 public abstract class AbstractApplicationContext implements ConfigurableApplicationContext {
 
