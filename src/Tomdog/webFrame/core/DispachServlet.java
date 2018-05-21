@@ -4,6 +4,7 @@ import Tomdog.webFrame.ServletApi.HttpServlet;
 import Tomdog.webFrame.annotation.Autoware;
 import Tomdog.webFrame.annotation.Controller;
 import Tomdog.webFrame.annotation.Service;
+import Tomdog.webFrame.context.ApplicationContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,27 +20,15 @@ import java.util.Map;
 import java.util.Properties;
 
 public class DispachServlet extends HttpServlet {
-
-
-    private Properties properties = new Properties();
-
-    private List<String> classNames = new ArrayList<String>();
-
-    private Map<String, Object> beanMap = new HashMap<String, Object>();
-
-    private static final String PACKAGE = "package";
+    
+    
 
     @Override
     public void init() {
 
-        doLoadConfig("WEB-INF/Resource.properties");
-
-        doScanner(PACKAGE);
-
-        doRegister();
-
-        doAutoWared();
-
+        ApplicationContext applicationContext = new ApplicationContext("WEB-INF/Resource.properties"); 
+        
+        initStrategies(applicationContext);
     }
 
     @Override
@@ -47,172 +36,65 @@ public class DispachServlet extends HttpServlet {
 //      TODO
     }
 
-    private void doLoadConfig(String location) {
-
-        InputStream in = this.getClass().getClassLoader().getResourceAsStream(location);
-
-        try {
-            this.properties.load(in);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+//    有九种策略
+//    针对每个用户请求都会经过一些处理的策略之后，最终才能有结果输出
+//    每种策略都可以自定义干预，但最终的结果都是一致的
+//    ModelAndView
+    private void initStrategies(ApplicationContext applicationContext) {
+        
+//        文件上传解析，如果是multipart将通过MultipartResolver进行文件上传解析。
+        initMultipartResolver(applicationContext); 
+        
+//        本地化解析
+        initLocalResolver(applicationContext);
+        
+//        主题解析
+        initThemeResolver(applicationContext);
+        
+//        通过handlerMapping将请求映射到处理器，建立路径到方法的键值对。
+        initHandlerMappings(applicationContext);
+        
+//        通过handlerAdapter进行多类型的动态参数匹配。
+        initHandlerAdapter(applicationContext);
+        
+//        解析异常处理
+        initHandlerExceptionResolver(applicationContext);
+        
+//        直接解析请求到视图名
+        initRequestToViewNameTranslator(applicationContext);
+        
+//        实现动态模板解析
+        initViewResolver(applicationContext);
+        
+//        flash映射管理器
+        initFlashMapManager(applicationContext);
     }
 
-    private void doScanner(String packageLocation) {
-
-        String packageName = properties.getProperty(packageLocation);
-
-        ClassLoader classLoader = this.getClass().getClassLoader();
-
-        URL url = classLoader.getResource("/" + packageLocation.replaceAll("\\.","//"));
-
-        if (null == url || "".equals(url)) {
-            return;
-        }
-
-        File file = new File(url.getFile());
-
-        if (!file.exists() || !file.isDirectory() || null == file.list()) {
-            return;
-        }
-
-        for (File subFile : file.listFiles()) {
-
-            if (subFile.isDirectory()) {
-
-                doScanner(packageName + "." + subFile.getName());
-
-            } else {
-
-                classNames.add(packageName + "." + subFile.getName().replace(".class", ""));
-
-            }
-
-        }
-
+    private void initMultipartResolver(ApplicationContext applicationContext) {
     }
 
-    private void doRegister() {
-
-        if (classNames.isEmpty()) {
-            return;
-        }
-
-        for (String className : classNames) {
-
-            Class clazz = null;
-
-            try {
-                clazz = Class.forName(className);
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            }
-
-            if (null == clazz) {
-                return;
-            }
-
-            String name = clazz.getSimpleName();
-
-            String beanName = (name.substring(0, 1) + 32) + name.substring(1);
-
-
-            if (clazz.isAnnotationPresent(Controller.class)) {
-
-                Constructor[] constructors = clazz.getConstructors();
-
-                if (constructors.length == 1) {
-                    try {
-                        this.beanMap.put(beanName, constructors[0].newInstance());
-                    } catch (InstantiationException e) {
-                        e.printStackTrace();
-                    } catch (IllegalAccessException e) {
-                        e.printStackTrace();
-                    } catch (InvocationTargetException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-            } else if (clazz.isAnnotationPresent(Service.class)) {
-
-                Constructor[] constructors = clazz.getConstructors();
-
-                Object instance = null;
-
-                try {
-                    instance = clazz.newInstance();
-                } catch (InstantiationException e) {
-                    e.printStackTrace();
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-
-                if (null == instance) {
-                    return;
-                }
-
-                this.beanMap.put(beanName, instance);
-
-                Class<?>[] interfaces = clazz.getInterfaces();
-
-                for (Class interfaceClass : interfaces) {
-
-                    String interfaceName = interfaceClass.getSimpleName();
-
-                    beanName = (interfaceName.substring(0, 1) + 32) + interfaceName.substring(1);
-
-                    beanMap.put(beanName, instance);
-
-                }
-
-            }
-
-        }
-
+    private void initLocalResolver(ApplicationContext applicationContext) {
     }
 
-    private void doAutoWared() {
-
-        if (beanMap.isEmpty()) {
-            return;
-        }
-
-        for (Map.Entry entry : beanMap.entrySet()) {
-
-            Object obj = entry.getValue();
-
-            Field[] fields = obj.getClass().getDeclaredFields();
-
-            for (Field field : fields) {
-
-                if (!field.isAnnotationPresent(Autoware.class)) {
-                    continue;
-                }
-
-                Autoware autoware = field.getAnnotation(Autoware.class);
-                String beanName = autoware.value().trim();
-
-                if ("".equals(beanName)) {
-                    beanName = field.getType().getName();
-                }
-
-                field.setAccessible(true);
-
-                try {
-                    field.set(obj, beanMap.get(beanName));
-                } catch (IllegalAccessException e) {
-                    e.printStackTrace();
-                }
-
-            }
-
-        }
-
+    private void initThemeResolver(ApplicationContext applicationContext) {
     }
 
-    private void initHandleMapping() {
+    private void initHandlerMappings(ApplicationContext applicationContext) {
+    }
 
+    private void initHandlerAdapter(ApplicationContext applicationContext) {
+    }
+
+    private void initHandlerExceptionResolver(ApplicationContext applicationContext) {
+    }
+
+    private void initRequestToViewNameTranslator(ApplicationContext applicationContext) {
+    }
+
+    private void initViewResolver(ApplicationContext applicationContext) {
+    }
+
+    private void initFlashMapManager(ApplicationContext applicationContext) {
     }
 
 }
