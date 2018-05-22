@@ -3,6 +3,7 @@ package Tomdog.springFrame.context;
 import Tomdog.springFrame.annotation.Autoware;
 import Tomdog.springFrame.annotation.Controller;
 import Tomdog.springFrame.annotation.Service;
+import Tomdog.springFrame.aop.AopConfig;
 import Tomdog.springFrame.beans.BeanDefinition;
 import Tomdog.springFrame.beans.BeanPostProcessor;
 import Tomdog.springFrame.beans.BeanWrapper;
@@ -49,7 +50,7 @@ public class ApplicationContext extends DefaultListableBeanFactory implements Be
 
         BeanDefinition beanDefinition = this.beanDefinitionMap.get(beanName);
 
-        BeanPostProcessor benaPostProcessor = new BeanPostProcessor();
+        BeanPostProcessor beanPostProcessor = new BeanPostProcessor();
 
         Object instance = instantionBean(beanDefinition);
 
@@ -57,11 +58,22 @@ public class ApplicationContext extends DefaultListableBeanFactory implements Be
             return null;
         }
 
+        beanPostProcessor.postProcessBeforeInitialization(instance, beanName);
+
         BeanWrapper beanWrapper = new BeanWrapper(instance);
+
+        beanWrapper.setAopConfig(instantAopConfig(beanDefinition));
+        beanWrapper.setPostProcessor(beanPostProcessor);
+
         this.beanWrapperMap.put(beanName, beanWrapper);
 
-
         return this.beanWrapperMap.get(beanName).getWrapperInstance();
+    }
+
+    private AopConfig instantAopConfig(BeanDefinition beanDefinition) {
+
+        return null;
+
     }
 
     public String[] getBeanDefinitionNames() {
