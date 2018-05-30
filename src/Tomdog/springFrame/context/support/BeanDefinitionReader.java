@@ -57,7 +57,7 @@ public class BeanDefinitionReader {
     //    扫描class文件
     private void doScanner(String packageName) {
 
-        URL url = this.getClass().getClassLoader().getResource( packageName.replaceAll("\\.", File.separator));
+        URL url = this.getClass().getClassLoader().getResource(packageName.replaceAll("\\.", File.separator));
 
         if (null == url) {
             return;

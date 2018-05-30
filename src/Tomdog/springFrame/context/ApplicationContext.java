@@ -14,6 +14,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ApplicationContext extends DefaultListableBeanFactory implements BeanFactory {
@@ -29,6 +30,10 @@ public class ApplicationContext extends DefaultListableBeanFactory implements Be
     public ApplicationContext(String configLocation) {
         this.configLocation = configLocation;
         refresh();
+    }
+
+    public Properties getConfig() {
+        return this.reader.getConfig();
     }
 
     @Override

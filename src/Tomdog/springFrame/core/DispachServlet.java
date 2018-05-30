@@ -1,12 +1,34 @@
 package Tomdog.springFrame.core;
 
+import Tomdog.http.HttpRequest;
+import Tomdog.http.HttpResponse;
 import Tomdog.springFrame.ServletApi.HttpServlet;
+import Tomdog.springFrame.annotation.Controller;
+import Tomdog.springFrame.annotation.RequestMapping;
+import Tomdog.springFrame.annotation.RequestParam;
 import Tomdog.springFrame.aop.AopProxyUtils;
 import Tomdog.springFrame.context.ApplicationContext;
+import Tomdog.springFrame.mvc.HandlerAdapter;
+import Tomdog.springFrame.mvc.HandlerMapping;
+import Tomdog.springFrame.mvc.ViewResolver;
+
+import java.io.File;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 public class DispachServlet extends HttpServlet {
     
-    
+    private List<HandlerMapping> handlerMappings = new ArrayList<HandlerMapping>();
+
+    private Map<HandlerMapping, HandlerAdapter> handlerAdapter = new HashMap<HandlerMapping, HandlerAdapter>();
+
+    private List<ViewResolver> viewResolvers = new ArrayList<ViewResolver>();
 
     @Override
     public void init() {
@@ -71,16 +93,85 @@ public class DispachServlet extends HttpServlet {
         for (String beanName : beanNames) {
 
             Object proxy = applicationContext.getBean(beanName);
-            Object controller = AopProxyUtils.getTargetObject(proxy);
+            Object controller = null;
+            try {
+                controller = AopProxyUtils.getTargetObject(proxy);
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+
+            if (null == controller) {
+                return;
+            }
+
             Class<?> clazz = controller.getClass();
 
-//            TODO
+//            仅仅对controller进行处理，因为负责处理请求的只有被@Controller注释接口描述的类
+            if (!clazz.isAnnotationPresent(Controller.class)) {
+                continue;
+            }
 
+            String  baseUri = "";
+
+            if (clazz.isAnnotationPresent(RequestMapping.class)) {
+                RequestMapping annotation = clazz.getAnnotation(RequestMapping.class);
+                baseUri = annotation.value();
+            }
+
+            Method[] methods = clazz.getMethods();
+
+            for (Method method : methods) {
+
+                if (!method.isAnnotationPresent(RequestMapping.class)) {
+                    continue;
+                }
+
+                RequestMapping annotation = method.getAnnotation(RequestMapping.class);
+                String regex = "/" + baseUri + annotation.value().replaceAll("\\*", ".*").replaceAll("/+", "/");
+
+                Pattern pattern = Pattern.compile(regex);
+                this.handlerMappings.add(new HandlerMapping(controller, method, pattern));
+            }
         }
-
     }
 
     private void initHandlerAdapter(ApplicationContext applicationContext) {
+
+        for (HandlerMapping handlerMapping : handlerMappings) {
+
+            Map<String, Integer> paramMapping = new HashMap<String, Integer>();
+
+            Annotation[][] annotationss = handlerMapping.getMethod().getParameterAnnotations();
+
+            int index = -1;
+            for (Annotation[] annotations : annotationss) {
+                index++;
+                for (Annotation annotation : annotations) {
+                    if (annotation instanceof RequestParam) {
+                        String paramName = ((RequestParam)annotation).value();
+                        if (!"".equals(paramName.trim())) {
+                            paramMapping.put(paramName, index);
+                        }
+                    }
+                }
+            }
+
+            Class<?>[] paramTypes = handlerMapping.getMethod().getParameterTypes();
+
+            index = -1;
+            for (Class type : paramTypes) {
+                index++;
+
+                if (type == HttpRequest.class
+                        || type == HttpResponse.class) {
+                    paramMapping.put(type.getName(), index);
+                }
+            }
+
+            this.handlerAdapter.put(handlerMapping, new HandlerAdapter(paramMapping));
+        }
     }
 
     private void initHandlerExceptionResolver(ApplicationContext applicationContext) {
@@ -90,6 +181,29 @@ public class DispachServlet extends HttpServlet {
     }
 
     private void initViewResolver(ApplicationContext applicationContext) {
+
+//        页面和模板关联
+
+        String templateRoot = applicationContext.getConfig().getProperty("templateRoot");
+        URL resource = this.getClass().getClassLoader().getResource(templateRoot);
+
+        if (null == resource) {
+            return;
+        }
+
+        String templateRootPath = resource.getFile();
+
+        File file = new File(templateRoot);
+
+        if (!file.isDirectory()) {
+            return;
+        }
+
+        File[] files = file.listFiles();
+
+        for (File templateFile : files) {
+            this.viewResolvers.add(new ViewResolver(templateFile.getName(), templateFile));
+        }
     }
 
     private void initFlashMapManager(ApplicationContext applicationContext) {
