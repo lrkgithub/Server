@@ -10,6 +10,7 @@ import Tomdog.springFrame.aop.AopProxyUtils;
 import Tomdog.springFrame.context.ApplicationContext;
 import Tomdog.springFrame.mvc.HandlerAdapter;
 import Tomdog.springFrame.mvc.HandlerMapping;
+import Tomdog.springFrame.mvc.ModelAndView;
 import Tomdog.springFrame.mvc.ViewResolver;
 
 import java.io.File;
@@ -20,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DispachServlet extends HttpServlet {
@@ -209,4 +211,63 @@ public class DispachServlet extends HttpServlet {
     private void initFlashMapManager(ApplicationContext applicationContext) {
     }
 
+    @Override
+    public void doGet(HttpRequest httpRequest, HttpResponse httpResponse) {
+        try {
+            doDispatch(httpRequest, httpResponse);
+        } catch (Exception e) {
+            httpResponse.bad();
+            e.printStackTrace();
+        }
+    }
+
+    private void doDispatch(HttpRequest httpRequest, HttpResponse httpResponse) throws Exception {
+
+        HandlerMapping handlerMapping = getHandler(httpRequest);
+
+        if (null == handlerMapping) {
+            httpResponse.bad();
+            return;
+        }
+
+        HandlerAdapter handlerAdapter = getAdapter(handlerMapping);
+
+        if (null == handlerAdapter) {
+            httpResponse.bad();
+        }
+
+        ModelAndView modelAndView = handlerAdapter.handle(httpRequest, httpResponse, handlerMapping);
+
+    }
+
+    private HandlerMapping getHandler(HttpRequest httpRequest) {
+
+        if (this.handlerMappings.isEmpty()) {
+            return null;
+        }
+
+        String url = httpRequest.getUri();
+        String contextPath = httpRequest.getContextUri();
+
+        url = url.replace(contextPath, "").replaceAll("/+", "/");
+
+        for (HandlerMapping handlerMapping : this.handlerMappings) {
+            Matcher matcher = handlerMapping.getPattern().matcher(url);
+
+            if (!matcher.matches()) {
+                return handlerMapping;
+            }
+        }
+
+        return null;
+    }
+
+    private HandlerAdapter getAdapter(HandlerMapping handlerMapping) {
+
+        if (this.handlerAdapter.isEmpty()) {
+            return null;
+        }
+
+        return this.handlerAdapter.get(handlerMapping);
+    }
 }

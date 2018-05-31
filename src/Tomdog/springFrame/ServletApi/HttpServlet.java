@@ -13,7 +13,7 @@ public abstract class HttpServlet implements Servlet {
         response.sendError();
     }
 
-    protected void doDeleted(HttpRequest request, HttpResponse response) {
+    protected void doDelete(HttpRequest request, HttpResponse response) {
         response.sendError();
     }
 
