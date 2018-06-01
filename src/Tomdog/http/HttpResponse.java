@@ -2,7 +2,7 @@ package Tomdog.http;
 
 import java.util.HashMap;
 
-public abstract class HttpResponse {
+public abstract class HttpResponse{
 
     HttpResponseLine line;
 
@@ -37,4 +37,6 @@ public abstract class HttpResponse {
     public abstract String getEntity();
 
     public abstract void sendError();
+
+    public abstract HttpOutputStream getWrite();
 }

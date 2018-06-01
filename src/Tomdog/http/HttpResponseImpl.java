@@ -40,6 +40,11 @@ public class HttpResponseImpl extends HttpResponse {
     }
 
     @Override
+    public HttpOutputStream getWrite() {
+        return out;
+    }
+
+    @Override
     public HttpResponse ok() {
         this.addVersion(defaultHttpVersion);
         this.addStatusCode(HttpStatusCode.OK);

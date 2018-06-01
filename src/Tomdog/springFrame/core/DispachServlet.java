@@ -14,6 +14,7 @@ import Tomdog.springFrame.mvc.ModelAndView;
 import Tomdog.springFrame.mvc.ViewResolver;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -238,6 +239,7 @@ public class DispachServlet extends HttpServlet {
 
         ModelAndView modelAndView = handlerAdapter.handle(httpRequest, httpResponse, handlerMapping);
 
+        processDispatchResult(httpResponse, modelAndView);
     }
 
     private HandlerMapping getHandler(HttpRequest httpRequest) {
@@ -269,5 +271,30 @@ public class DispachServlet extends HttpServlet {
         }
 
         return this.handlerAdapter.get(handlerMapping);
+    }
+
+    private void processDispatchResult(HttpResponse httpResponse, ModelAndView modelAndView) throws IOException {
+
+        if (null == modelAndView) {
+            return;
+        }
+
+        if (this.viewResolvers.isEmpty()) {
+            return;
+        }
+
+        for (ViewResolver viewResolver : this.viewResolvers) {
+
+            if (!viewResolver.getViewName().equals(modelAndView.getViewName())) {
+                continue;
+            }
+
+            String out = viewResolver.resolve(modelAndView);
+
+            if (null != out) {
+                httpResponse.getWrite().write(out);
+            }
+        }
+
     }
 }

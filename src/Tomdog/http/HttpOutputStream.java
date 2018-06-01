@@ -46,6 +46,14 @@ public class HttpOutputStream {
         }
     }
 
+    public void write(String response) {
+        try {
+            out.write(response.getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private byte[] write(HttpResponseLine line) throws IOException {
         if (line == null) {
             return new byte[]{};
@@ -58,7 +66,7 @@ public class HttpOutputStream {
         if (version == null || version.equals("")
                 || code == null
                 || phrase == null || phrase.equals("")) {
-            System.out.println("the response line is missing something " + version + "銆€" + code + " " + " " + phrase);
+            System.out.println("the response line is missing something " + version + " :  " + code + " " + " " + phrase);
             return new byte[]{};
         }
 

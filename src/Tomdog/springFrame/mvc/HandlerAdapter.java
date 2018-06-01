@@ -26,7 +26,7 @@ public class HandlerAdapter {
 
             String value = param.getValue().replaceAll("\\[|\\]", "").replaceAll("\\s", "");
 
-            if (!this.paramMapping.containsKey(value)) {
+            if (!this.paramMapping.containsKey(param.getKey())) {
                 continue;
             }
 
